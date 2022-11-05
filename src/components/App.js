@@ -4,7 +4,7 @@ import Nav from "./Nav";
 import Stories from "./Stories";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
-const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
+const nytapi = "2v72yDyrbyEkA2H1rchezWmArTmncneS";
 
 function App() {
   const [stories, setStories] = React.useState([]);
@@ -29,6 +29,11 @@ function App() {
     )
       .then((response) => response.json())
       .then((data) => setStories(data.results))
+      // .then(
+      //   console.log(
+      //     `https://api.nytimes.com/svc/topstories/v2/${section}.json?api-key=${nytapi}`
+      //   )
+      // )
       .then(setLoading(false))
       .catch((error) => {
         console.log(error);
