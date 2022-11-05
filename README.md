@@ -11,7 +11,7 @@ The midterm assignment is to refactor All the News including (but not limited to
 1. destructuring all props in the components (e.g. no more `props.story` or `story.title`)
 2. converting all css to styled components (you should delete all css files after completion)
 3. using the directory structure outlined below (e.g. `story > index.js & styles.js`)
-3. creating a Loading component:
+4. creating a Loading component:
 
 ```js
 import React from "react";
@@ -76,9 +76,15 @@ In the first session we created a [single page app](https://react-pirates.netlif
 
 The [final result](https://react-all-the-news.netlify.app/) will behave a bit differently. Instead of scrolling to different sections, it will load new data when the user navigates.
 
-`cd` into this repo, install the required npm modules using `$ npm install` and `$ npm start` the application.
+`cd` into your class working folder and run:
 
-Examine the application structure. To minimize the number of imports, the CSS and images are in the public folder.
+`npx create-react-app all-the-new-react`
+
+cd into the new project and `$ npm start` the application.
+
+Examine the application structure.
+
+Copy the public folder from today's download and replace the public folder in the newly created app with it.
 
 ## Create the Header Component
 
@@ -104,7 +110,7 @@ App.js:
 
 ```js
 import React from "react";
-import Header from "./Header";
+import Header from "./components/Header";
 
 function App() {
   return (
@@ -141,8 +147,8 @@ Import into App.js and compose it:
 
 ```js
 import React from "react";
-import Header from "./Header";
-import Nav from "./Nav";
+import Header from "./components/Header";
+import Nav from "./components/Nav";
 
 function App() {
   return (
@@ -166,8 +172,8 @@ And send them, via props, to the Nav component:
 
 ```js
 import React from "react";
-import Header from "./Header";
-import Nav from "./Nav";
+import Header from "./components/Header";
+import Nav from "./components/Nav";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
 
@@ -237,9 +243,9 @@ And import / compose it in App.js:
 
 ```js
 import React from "react";
-import Header from "./Header";
-import Nav from "./Nav";
-import Stories from "./Stories";
+import Header from "./components/Header";
+import Nav from "./components/Nav";
+import Stories from "./components/Stories";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
 
@@ -300,16 +306,15 @@ Let's begin by creating two pieces of state in App.js:
 
 ```js
 import React from "react";
-import Header from "./Header";
-import Nav from "./Nav";
-import Stories from "./Stories";
+import Header from "./components/Header";
+import Nav from "./components/Nav";
+import Stories from "./components/Stories";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
 
 function App() {
   const [stories, setStories] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
-
   return (
     <>
       <Header siteTitle="All the News that Fits We Print" />
@@ -330,11 +335,12 @@ App.js:
 
 ```js
 import React from "react";
-import Header from "./Header";
-import Nav from "./Nav";
-import Stories from "./Stories";
+import Header from "./components/Header";
+import Nav from "./components/Nav";
+import Stories from "./components/Stories";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+const fetchUrl = "https://api.nytimes.com/svc/topstories/v2/";
 const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
 const section = "arts";
 
@@ -343,10 +349,9 @@ function App() {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    fetch(
-      `https://api.nytimes.com/svc/topstories/v2/${section}.json?api-key=${nytapi}`
-    )
+    fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
       .then((response) => response.json())
+      .then((myJson) => localStorage.setItem(section, JSON.stringify(myJson)))
       .then((data) => setStories(data.results));
   }, []);
 
@@ -354,7 +359,7 @@ function App() {
     <>
       <Header siteTitle="All the News that Fits We Print" />
       <Nav navItems={navItems} />
-      <Stories stories={stories} />
+      <Stories />
     </>
   );
 }
@@ -362,17 +367,43 @@ function App() {
 export default App;
 ```
 
+Ensure that arts is in localstorage.
+
+Ensure that arts is in state using the React dev tool.
+
 ## useEffect
 
 In computer science, a function or expression is said to have a side effect if it modifies some state outside its scope or has an observable interaction with its calling functions or the outside world besides returning a value. An effect is anything outside your application and includes things like cookies and fetching API data.
 
-The useEffect Hook lets you perform side effects in function components. By using this Hook, you tell React that your component needs to do something after it renders. By default, it runs both after the first render and after every update but we'll be customizing it to run only when the section (arts,,, music etc.) changes. For now, we are only using one section - arts.
+The useEffect Hook lets you perform side effects in function components. By using this Hook, you tell React that your component needs to do something after it renders. By default, it runs both after the first render and after every update but we'll be customizing it to run only when the section (arts, music etc.) changes. For now, we are only using one section - arts.
 
 ```js
 React.useEffect(callbackFunction, []);
 ```
 
 Note the empty array that is the second argument in useEffect. An empty array causes the effect to run once after the component renders and again when the component unmounts or just before it is removed. `[]` tells React that your effect doesn’t depend on any values from props or state, so it never needs to re-run.
+
+## localStorage
+
+Here is a [possibly useful article](https://www.freecodecamp.org/news/how-to-use-localstorage-with-react-hooks-to-set-and-get-items/) on localStage in React (hint: its not that different that in is in Vanilla JS).
+
+```js
+React.useEffect(() => {
+  if (!localStorage.getItem(section)) {
+    console.log("fetching from NYT");
+    fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
+      .then((response) => response.json())
+      .then((myJson) => {
+        localStorage.setItem(section, JSON.stringify(myJson.results));
+      })
+      .then(() => setStories(JSON.parse(localStorage.getItem(section))));
+  } else {
+    console.log("section is in storage, not fetching");
+    setStories(JSON.parse(localStorage.getItem(section)));
+  }
+  console.log(JSON.parse(localStorage.getItem(section)));
+}, [section]);
+```
 
 ## The Story Component
 
@@ -392,6 +423,18 @@ const Story = (props) => {
 };
 
 export default Story;
+```
+
+Pass the stories data down to the Stories component:
+
+```js
+return (
+  <>
+    <Header siteTitle="All the News that Fits We Print" />
+    <Nav navItems={navItems} />
+    <Stories stories={stories} />
+  </>
+);
 ```
 
 We will render multiple story components from Stories.js with a key set to the story's index.
@@ -483,11 +526,12 @@ We'll also add an if statment that shows "Loading" while the data is loading.
 
 ```js
 import React from "react";
-import Header from "./Header";
-import Nav from "./Nav";
-import Stories from "./Stories";
+import Header from "./components/Header";
+import Nav from "./components/Nav";
+import Stories from "./components/Stories";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+const fetchUrl = "https://api.nytimes.com/svc/topstories/v2/";
 const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
 const section = "arts";
 
@@ -497,17 +541,24 @@ function App() {
 
   React.useEffect(() => {
     setLoading(true);
-    fetch(
-      `https://api.nytimes.com/svc/topstories/v2/${section}.json?api-key=${nytapi}`
-    )
-      .then((response) => response.json())
-      .then((data) => setStories(data.results))
-      .then(setLoading(false));
+    if (!localStorage.getItem(section)) {
+      console.log("fetching from NYT");
+      fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
+        .then((response) => response.json())
+        .then((myJson) => {
+          localStorage.setItem(section, JSON.stringify(myJson.results));
+        })
+        .then(() => setStories(JSON.parse(localStorage.getItem(section))));
+    } else {
+      console.log("not fetching");
+      setStories(JSON.parse(localStorage.getItem(section)));
+    }
+    console.log(JSON.parse(localStorage.getItem(section)));
   }, []);
 
-    if (loading) {
-      return <h2>Loading...</h2>;
-    }
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
 
   return (
     <>
@@ -521,47 +572,68 @@ function App() {
 export default App;
 ```
 
-If you leave the loading state as true after the fetch you should see the message.
+If you leave the loading state true after the fetch you should see the early return.
+
+Simplify App.js by moving some of the functionality in our useEffect call into a new `scr/api.js` file.
+
+```js
+const fetchUrl = "https://api.nytimes.com/svc/topstories/v2/";
+const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
+
+export function fetchStoriesFromLocalStorage(section, setStories) {
+  console.log("not fetching");
+  setStories(JSON.parse(localStorage.getItem(section)));
+}
+
+export function fetchStoriesFromNYTimes(section, setStories) {
+  console.log("fetching from NYT");
+  fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
+    .then((response) => response.json())
+    .then((myJson) => {
+      localStorage.setItem(section, JSON.stringify(myJson.results));
+    })
+    .then(setStories(JSON.parse(localStorage.getItem(section))));
+}
+```
 
 We are currently hiding everything on load. Let's only hide the content area:
 
 ```js
 import React from "react";
-import Header from "./Header";
-import Nav from "./Nav";
-import Stories from "./Stories";
+import Header from "./components/Header";
+import Nav from "./components/Nav";
+import Stories from "./components/Stories";
+import {
+  fetchStoriesFromLocalStorage,
+  fetchStoriesFromNYTimes,
+} from "./api/api";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
-const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
-const section = "arts";
 
 function App() {
   const [stories, setStories] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
+  const [section, setSection] = React.useState("arts");
 
   React.useEffect(() => {
     setLoading(true);
-    fetch(
-      `https://api.nytimes.com/svc/topstories/v2/${section}.json?api-key=${nytapi}`
-    )
-      .then((response) => response.json())
-      .then((data) => setStories(data.results))
-      .then(setLoading(true));
-  }, []);
+    if (!localStorage.getItem(section)) {
+      fetchStoriesFromNYTimes(section, setStories);
+    } else {
+      fetchStoriesFromLocalStorage(section, setStories);
+    }
+    setLoading(false);
+  }, [section]);
 
-  // if (loading) {
-  //   return <h2>Loading...</h2>;
-  // }
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
 
   return (
     <>
       <Header siteTitle="All the News that Fits We Print" />
       <Nav navItems={navItems} />
-      {loading || stories.length === 0 ? (
-        <h2>Loading...</h2>
-      ) : (
-        <Stories stories={stories} />
-      )}
+      <Stories stories={stories} />
     </>
   );
 }
@@ -571,56 +643,16 @@ export default App;
 
 (We can also see the effect by slowing down the loading in the Network tab of the developer tools.)
 
-Next we'll create a piece of state for the sections:
-
-```js
-const [section, setSection] = React.useState("arts");
-```
-
-```js
-import React from "react";
-import Header from "./Header";
-import Nav from "./Nav";
-import Stories from "./Stories";
-
-const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
-const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
-
-function App() {
-  const [stories, setStories] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  const [section, setSection] = React.useState("arts");
-
-  React.useEffect(() => {
-    setLoading(true);
-    fetch(
-      `https://api.nytimes.com/svc/topstories/v2/${section}.json?api-key=${nytapi}`
-    )
-      .then((response) => response.json())
-      .then((data) => setStories(data.results))
-      .then(setLoading(false));
-  }, []);
-
-  return (
-    <>
-      <Header siteTitle="All the News that Fits We Print" />
-      <Nav navItems={navItems} />
-      {loading || stories.length === 0 ? (
-        <h2>Loading...</h2>
-      ) : (
-        <Stories stories={stories} />
-      )}
-    </>
-  );
-}
-
-export default App;
-```
-
 Since clicking on the nav is what changes the section we'll pass `setSection` into the Nav in App.js:
 
 ```js
-<Nav navItems={navItems} setSection={setSection} />
+return (
+  <>
+    <Header siteTitle="All the News that Fits We Print" />
+    <Nav navItems={navItems} setSection={setSection} />
+    <Stories stories={stories} />
+  </>
+);
 ```
 
 We'll use a new component in Nav to display each of the nav elements.
@@ -707,24 +739,21 @@ const NavItem = (props) => {
 export default NavItem;
 ```
 
-The click event now communicates with the setSection function in App.js however our useState hook needs to run again when the section changes:
+The click event now communicates with the setSection function in App.js and our useState hook runs again when the section changes:
 
 ```js
 React.useEffect(() => {
   setLoading(true);
-  fetch(
-    `https://api.nytimes.com/svc/topstories/v2/${section}.json?api-key=${nytapi}`
-  )
-    .then((response) => response.json())
-    .then((data) => setStories(data.results))
-    .then(setLoading(false))
-    .catch((error) => {
-      console.log(error);
-    });
+  if (!localStorage.getItem(section)) {
+    fetchStoriesFromNYTimes(section, setStories);
+  } else {
+    fetchStoriesFromLocalStorage(section, setStories);
+  }
+  setLoading(false);
 }, [section]);
 ```
 
-Note we've added `section` to the previously empty useFetch dependencies array. The array allows you to determine when the effect will run. THe empty array caused the effect to run once after the component rendered. When we add a piece of state or a prop to the array the effect will run whenever that state or prop changes.
+Note we've added `section` to the previously empty useFetch dependencies array. The array allows you to determine when the effect will run. The empty array caused the effect to run once after the component rendered. When we add a piece of state or a prop to the array the effect will run whenever that state or prop changes.
 
 `.catch` has also been added at the end of the promise chain to log any errors that might occur.
 
@@ -762,37 +791,28 @@ const Nav = (props) => {
 export default Nav;
 ```
 
-Remove the `fill` attribute in the svg file. Change it it using inline css:
-
-```js
-<img
-  style={{ fill: "white" }}
-```
+Remove the `fill` attribute in the svg file.
 
 Note: `style` expects an object. we could also write it:
 
 ```js
 const Nav = (props) => {
+
   const svgStyles = {
     fill: "white",
   };
-  return (
-    <nav>
-      <ul>
-        <li className="logo">
-          <a href="#top">
-            <img
-              style={svgStyles}
 ```
 
-[URL encode](https://yoksel.github.io/url-encoder/) the logo and use it inline:
+[URL encode](https://yoksel.github.io/url-encoder/) the logo and use it inline passing the style block:
 
 ```js
-<img
-  style={svgStyles}
-  src="data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8' standalone='no'%3F%3E%3Csvg width='256px' fill='white' height='188px' viewBox='0 0 256 188' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' preserveAspectRatio='xMidYMid'%3E%3Cg%3E%3Cpath d='M244.675204,104.605355 C237.22468,95.3667056 227.837021,89.257276 216.214203,86.5750874 C219.790454,81.0616997 221.727591,74.9522702 221.727591,68.2467987 C221.727591,58.8591385 218.44936,50.8125728 211.743888,44.1071013 C205.038417,37.4016298 196.991852,34.1233993 187.60419,34.1233993 C179.110593,34.1233993 171.809081,36.8055879 165.55064,42.3189756 C160.335274,29.5040745 151.990688,19.2223516 140.36787,11.4738068 C128.894063,3.87427241 116.228172,0 102.370198,0 C83.4458673,0 67.3527358,6.70547148 54.0908033,19.967404 C40.8288708,33.2293365 34.1233993,49.322468 34.1233993,68.2467987 C34.1233993,69.4388825 34.2724098,71.3760187 34.4214203,73.9091969 C23.9906869,78.8265425 15.6461001,86.1280559 9.38766007,95.9627475 C3.12922003,105.648429 0,116.377183 0,127.85099 C0,144.242143 5.81140862,158.398138 17.5832364,170.020955 C29.2060536,181.643772 43.3620489,187.60419 59.7532014,187.60419 L204.740397,187.60419 C218.896392,187.60419 230.96624,182.537835 240.949942,172.554133 C250.933643,162.570431 256,150.500582 256,136.344587 C255.850989,124.572759 252.125728,113.993015 244.675204,104.605355 L244.675204,104.605355 L244.675204,104.605355 Z M200.717113,187.60419 L179.557626,187.60419 L172.405122,165.25262 L131.12922,165.25262 L123.976717,187.60419 L102.817229,187.60419 L140.963912,81.2107101 L162.570431,81.2107101 L200.717113,187.60419 L200.717113,187.60419 L200.717113,187.60419 Z M136.493598,148.265424 L167.040745,148.265424 L151.841677,100.284051 L136.493598,148.265424 L136.493598,148.265424 Z' %3E%3C/path%3E%3C/g%3E%3C/svg%3E%0A"
-  alt="logo"
-/>
+export const Logo = ({ svgStyles }) => (
+  <img
+    style={svgStyles}
+    src="data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8' standalone='no'%3F%3E%3Csvg width='256px' fill='white' height='188px' viewBox='0 0 256 188' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' preserveAspectRatio='xMidYMid'%3E%3Cg%3E%3Cpath d='M244.675204,104.605355 C237.22468,95.3667056 227.837021,89.257276 216.214203,86.5750874 C219.790454,81.0616997 221.727591,74.9522702 221.727591,68.2467987 C221.727591,58.8591385 218.44936,50.8125728 211.743888,44.1071013 C205.038417,37.4016298 196.991852,34.1233993 187.60419,34.1233993 C179.110593,34.1233993 171.809081,36.8055879 165.55064,42.3189756 C160.335274,29.5040745 151.990688,19.2223516 140.36787,11.4738068 C128.894063,3.87427241 116.228172,0 102.370198,0 C83.4458673,0 67.3527358,6.70547148 54.0908033,19.967404 C40.8288708,33.2293365 34.1233993,49.322468 34.1233993,68.2467987 C34.1233993,69.4388825 34.2724098,71.3760187 34.4214203,73.9091969 C23.9906869,78.8265425 15.6461001,86.1280559 9.38766007,95.9627475 C3.12922003,105.648429 0,116.377183 0,127.85099 C0,144.242143 5.81140862,158.398138 17.5832364,170.020955 C29.2060536,181.643772 43.3620489,187.60419 59.7532014,187.60419 L204.740397,187.60419 C218.896392,187.60419 230.96624,182.537835 240.949942,172.554133 C250.933643,162.570431 256,150.500582 256,136.344587 C255.850989,124.572759 252.125728,113.993015 244.675204,104.605355 L244.675204,104.605355 L244.675204,104.605355 Z M200.717113,187.60419 L179.557626,187.60419 L172.405122,165.25262 L131.12922,165.25262 L123.976717,187.60419 L102.817229,187.60419 L140.963912,81.2107101 L162.570431,81.2107101 L200.717113,187.60419 L200.717113,187.60419 L200.717113,187.60419 Z M136.493598,148.265424 L167.040745,148.265424 L151.841677,100.284051 L136.493598,148.265424 L136.493598,148.265424 Z' %3E%3C/path%3E%3C/g%3E%3C/svg%3E%0A"
+    alt="logo"
+  />
+);
 ```
 
 ## Section Headers
@@ -842,6 +862,7 @@ And then forward the property to the NavItem component:
 ```js
 import React from "react";
 import NavItem from "./NavItem";
+import { Logo } from "./Logo";
 
 const Nav = (props) => {
   return (
@@ -849,7 +870,7 @@ const Nav = (props) => {
       <ul>
         <li className="logo">
           <a href="#top">
-            <img src="img/logo.svg" alt="logo" />
+            <Logo />
           </a>
         </li>
         {props.navItems.map((navItem, index) => (
@@ -930,15 +951,15 @@ Currently if a user refreshes the page the section is reset to the default: `con
 
 ```js
 import React from "react";
-import Header from "./header";
-import Nav from "./nav";
-import Stories from "./stories";
-import Loader from "./loader";
-
-import "./app.css";
+import Header from "./components/Header";
+import Nav from "./components/Nav";
+import Stories from "./components/Stories";
+import {
+  fetchStoriesFromLocalStorage,
+  fetchStoriesFromNYTimes,
+} from "./api/api";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
-const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
 
 const getExpirationDate = (time) => {
   return new Date(+new Date() + time).toUTCString();
@@ -959,20 +980,8 @@ if (cookieVal) {
 function App() {
   const [stories, setStories] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
+  // const [section, setSection] = React.useState("arts");
   const [section, setSection] = React.useState(cookieVal || "arts");
-
-  React.useEffect(() => {
-    setLoading(true);
-    fetch(
-      `https://api.nytimes.com/svc/topstories/v2/${section}.json?api-key=${nytapi}`
-    )
-      .then((response) => response.json())
-      .then((data) => setStories(data.results))
-      .then(setLoading(false))
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [section]);
 
   React.useEffect(() => {
     document.cookie = `section=${section}; expires=${getExpirationDate(
@@ -980,15 +989,27 @@ function App() {
     )}`;
   }, [section]);
 
+  React.useEffect(() => {
+    setLoading(true);
+    if (!localStorage.getItem(section)) {
+      fetchStoriesFromNYTimes(section, setStories);
+    } else {
+      fetchStoriesFromLocalStorage(section, setStories);
+    }
+    setLoading(false);
+  }, [section]);
+
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
+
   return (
     <>
       <Header siteTitle="All the News that Fits We Print" />
+      {/* <Nav navItems={navItems} setSection={setSection} /> */}
       <Nav navItems={navItems} setSection={setSection} section={section} />
-      {loading || stories.length === 0 ? (
-        <Loader />
-      ) : (
-        <Stories stories={stories} section={section} />
-      )}
+      {/* <Stories stories={stories} /> */}
+      <Stories stories={stories} section={section} />
     </>
   );
 }
