@@ -74,13 +74,11 @@ And displays this [SVG file](https://codepen.io/aurer/pen/jEGbA) while loading i
 
 In the first session we created a [single page app](https://react-pirates.netlify.app/) using vanilla js. In this class we will use React.
 
-The [final result](https://react-all-the-news.netlify.app/) will behave a bit differently. Instead of scrolling to different sections, it will load new data when the user navigates.
-
-`cd` into your class working folder and run:
+`cd` into your class working folder (top level, not this repo) and run:
 
 `npx create-react-app all-the-new-react`
 
-cd into the new project and `$ npm start` the application.
+`cd` into the new project and `$ npm start` the application.
 
 Examine the application structure.
 
@@ -90,7 +88,7 @@ Copy the public folder from today's download and replace the public folder in th
 
 Begin by creating a simple functional component in the components folder:
 
-`components/Header.js`
+`src/components/Header.js`:
 
 ```js
 import React from "react";
@@ -189,7 +187,7 @@ function App() {
 export default App;
 ```
 
-Use the React developer tool to inspect the Nav component and ensure the navItems props exists.
+Use the React developer tool to inspect the Nav component and ensure the navItems props exists and are available in Nav.js.
 
 Now we can build out the nav items using props:
 
@@ -264,7 +262,7 @@ export default App;
 
 ## Demo: State
 
-We could add the fetching capability in the Stories component as follows:
+We could add the data fetching capability in the Stories component as follows:
 
 ```js
 import React from "react";
@@ -313,8 +311,10 @@ import Stories from "./components/Stories";
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
 
 function App() {
+  // HERE
   const [stories, setStories] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
+
   return (
     <>
       <Header siteTitle="All the News that Fits We Print" />
@@ -340,6 +340,7 @@ import Nav from "./components/Nav";
 import Stories from "./components/Stories";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+// HERE
 const fetchUrl = "https://api.nytimes.com/svc/topstories/v2/";
 const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
 const section = "arts";
@@ -373,19 +374,23 @@ Ensure that arts is in state using the React dev tool.
 
 ## useEffect
 
-In computer science, a function or expression is said to have a side effect if it modifies some state outside its scope or has an observable interaction with its calling functions or the outside world besides returning a value. An effect is anything outside your application and includes things like cookies and fetching API data.
+In computer science, a function or expression is said to have a "side effect" if it modifies some state outside its scope or has an observable interaction with its calling functions or the outside world besides returning a value. An "effect" is anything outside your application and includes things like cookies and fetching API data.
 
-The useEffect Hook lets you perform side effects in function components. By using this Hook, you tell React that your component needs to do something after it renders. By default, it runs both after the first render and after every update but we'll be customizing it to run only when the section (arts, music etc.) changes. For now, we are only using one section - arts.
+The useEffect Hook lets you perform side effects in React components. By using this Hook, you tell React that your component needs to do something after it renders. By default, it runs both after the first render and after every update but we'll be customizing it to run only when the section (arts, music etc.) changes. For now, we are only using one section - arts.
+
+The full function signature looks like this:
 
 ```js
 React.useEffect(callbackFunction, []);
 ```
 
-Note the empty array that is the second argument in useEffect. An empty array causes the effect to run once after the component renders and again when the component unmounts or just before it is removed. `[]` tells React that your effect doesn’t depend on any values from props or state, so it never needs to re-run.
+Note the empty array that is the second argument in useEffect. An empty array causes the effect to run only once after the component renders and again when the component unmounts or just before it is removed. `[]` tells React that your effect doesn’t depend on any values from props or state, so it never needs to re-run.
 
 ## localStorage
 
 Here is a [possibly useful article](https://www.freecodecamp.org/news/how-to-use-localstorage-with-react-hooks-to-set-and-get-items/) on localStage in React (hint: its not that different that in is in Vanilla JS).
+
+Add an if/else statement similar to what we used in a previous exercise.
 
 ```js
 React.useEffect(() => {
@@ -403,6 +408,63 @@ React.useEffect(() => {
   }
   console.log(JSON.parse(localStorage.getItem(section)));
 }, [section]);
+```
+
+Notice, we added "section" to the dependency array.
+
+Change the section variable:
+
+`const section = "books";`
+
+Note that the useEffect hook ran and the books data is in localStorage.
+
+```js
+import React from "react";
+
+const Counter = () => {
+  const [count, setCount] = React.useState(0);
+
+  return (
+    <div>
+      <h1>{count}</h1>
+      <button onClick={() => setCount(count + 1)}>Increase</button>
+    </div>
+  );
+};
+
+export default Counter;
+```
+
+```js
+import React from "react";
+
+const Counter = () => {
+  const [count, setCount] = React.useState(0);
+
+  // NEW
+  React.useEffect(() => {
+    document.title = `(${count}) — Counter`;
+  });
+
+  // EMPTY DEPENDENCY ARRAY
+  //   React.useEffect(() => {
+  //     document.title = `(${count}) — Counter`;
+  //   }, []);
+
+  // WITH DEPENDENCY ARRAY
+  //   React.useEffect(() => {
+  //     document.title = `(${count}) — Counter`;
+  //   }, [count]);
+
+  return (
+    <div>
+      <h1>{count}</h1>
+      <button onClick={() => setCount(count + 1)}>Increase</button>
+    </div>
+  );
+};
+
+export default Counter;
 ```
 
 ## The Story Component
@@ -512,11 +574,9 @@ const Story = (props) => {
 export default Story;
 ```
 
-## Multiple Sections
+## Loading
 
-Currently our app only renders the arts section. We need to code the navbar tabs to communicate with App in order to call fetch for additional sections.
-
-But first, it is important that we allow that data to be fetched before we try to render the rest of the application.
+Allow data to be fetched before we try to render the rest of the application.
 
 Let's switch the isLoading piece of state to true while the fetch operation is under way and set it to false once the operation has completed.
 
@@ -574,19 +634,25 @@ export default App;
 
 If you leave the loading state true after the fetch you should see the early return.
 
-Simplify App.js by moving some of the functionality in our useEffect call into a new `scr/api.js` file.
+Set it to false at the end of the useEffect function:
+
+`setLoading(false);`
+
+(We can also see the loading block by slowing loading in the Network tab of the developer tools.)
+
+## Refactor
+
+Simplify App.js by moving some of the functionality in App.js into a new `scr/api.js` file:
 
 ```js
 const fetchUrl = "https://api.nytimes.com/svc/topstories/v2/";
 const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
 
 export function fetchStoriesFromLocalStorage(section, setStories) {
-  console.log("not fetching");
   setStories(JSON.parse(localStorage.getItem(section)));
 }
 
 export function fetchStoriesFromNYTimes(section, setStories) {
-  console.log("fetching from NYT");
   fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
     .then((response) => response.json())
     .then((myJson) => {
@@ -596,17 +662,14 @@ export function fetchStoriesFromNYTimes(section, setStories) {
 }
 ```
 
-We are currently hiding everything on load. Let's only hide the content area:
+Import api and use it in the App component:
 
 ```js
 import React from "react";
 import Header from "./components/Header";
 import Nav from "./components/Nav";
 import Stories from "./components/Stories";
-import {
-  fetchStoriesFromLocalStorage,
-  fetchStoriesFromNYTimes,
-} from "./api/api";
+import { fetchStoriesFromLocalStorage, fetchStoriesFromNYTimes } from "./api";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
 
@@ -641,7 +704,9 @@ function App() {
 export default App;
 ```
 
-(We can also see the effect by slowing down the loading in the Network tab of the developer tools.)
+## Multiple Sections
+
+Currently our app only renders the arts section. We need to code the navbar tabs to communicate with App.js in order to call fetch for additional sections.
 
 Since clicking on the nav is what changes the section we'll pass `setSection` into the Nav in App.js:
 
@@ -815,6 +880,16 @@ export const Logo = ({ svgStyles }) => (
 );
 ```
 
+Compose it in Nav.js:
+
+```js
+<li className="logo">
+  <a href="#top">
+    <Logo svgStyles={svgStyles} />
+  </a>
+</li>
+```
+
 ## Section Headers
 
 We'll also add a header to the top of the article list.
@@ -851,13 +926,15 @@ Add a highlight to the current nav item to indicate the section we are viewing.
 
 We can use the section state to set the activeLink property.
 
+Pass the section info to the Nav component.
+
 In App.js:
 
 ```js
 <Nav navItems={navItems} setSection={setSection} section={section} />
 ```
 
-And then forward the property to the NavItem component:
+And then forward the property from Nav to the NavItem component:
 
 ```js
 import React from "react";
@@ -954,10 +1031,7 @@ import React from "react";
 import Header from "./components/Header";
 import Nav from "./components/Nav";
 import Stories from "./components/Stories";
-import {
-  fetchStoriesFromLocalStorage,
-  fetchStoriesFromNYTimes,
-} from "./api/api";
+import { fetchStoriesFromLocalStorage, fetchStoriesFromNYTimes } from "./api";
 
 const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
 
@@ -1035,7 +1109,7 @@ React.useEffect(() => {
   const url = new URL(window.location.href);
   const hash = url.hash.slice(1);
   if (hash !== "undefined") {
-    console.log(" hash ", hash);
+    console.log(" hash::", hash);
     setSection(hash);
   } else {
     setSection("arts");
@@ -1051,7 +1125,7 @@ We will use [Styled Components](https://styled-components.com/) to refactor our 
 
 `$ npm i styled-components`
 
-We'll start on the lower level components and work our way up beginning with the Story component.
+We'll start on the lower level components and work our way up beginning with the Story component:
 
 ```js
 import React from "react";
@@ -1098,6 +1172,8 @@ const Story = (props) => {
 
 export default Story;
 ```
+
+Now we can remove any css from 'styles.css` that references the class entry.
 
 To make things interesting we are going to add a link around the entire component to make the whole entry clickable.
 
@@ -1282,7 +1358,5 @@ export const PageHeader = styled.h2`
   grid-area: sectionhead;
 `;
 ```
-
-For the remaining components see the `local` branch of this repo.
 
 ## Instructor Notes
