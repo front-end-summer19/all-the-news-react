@@ -657,10 +657,69 @@ export function fetchStoriesFromNYTimes(section, setStories) {
     .then((response) => response.json())
     .then((myJson) => {
       localStorage.setItem(section, JSON.stringify(myJson.results));
-    })
-    .then(setStories(JSON.parse(localStorage.getItem(section))));
+    });
+  setStories(JSON.parse(localStorage.getItem(section)));
 }
 ```
+
+## async/await
+
+Read [this article](https://www.smashingmagazine.com/2020/11/comparison-async-await-versus-then-catch/) on Async/await vs `.then` chaining.
+
+Sample:
+
+```js
+someFunc() {
+    fetch('https://someurl.com')
+        .then((response) => response.json())
+        .then((data) => console.log(data)
+
+    console.log("I will not be blocked")
+}
+```
+
+Compare the `fetchStoriesFromNYTimes` function above with the one below in light of the preceeding.
+
+```js
+export function fetchStoriesFromNYTimes(section, setStories) {
+  fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
+    .then((response) => response.json())
+    .then((myJson) => {
+      localStorage.setItem(section, JSON.stringify(myJson.results));
+      setStories(JSON.parse(localStorage.getItem(section)));
+    })
+    .catch((error) => console.log(error));
+}
+```
+
+Sample:
+
+```js
+async someFunc() {
+    let response = await fetch('https://someurl.com');
+    let data = await response.json();
+    console.log("I will be blocked", data);
+}
+```
+
+```js
+export async function fetchStoriesFromNYTimes(section, setStories) {
+  try {
+    let response = await fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`);
+    console.log("response::", response);
+    let data = await response.json();
+    console.log("data::", data);
+    localStorage.setItem(section, JSON.stringify(data.results));
+    setStories(JSON.parse(localStorage.getItem(section)));
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
+
+See the "async-await-vs-then" folder in today's repo.
+
+---
 
 Import api and use it in the App component:
 
@@ -1120,6 +1179,11 @@ React.useEffect(() => {
 ## Styled Components
 
 Examine the New York Times website in the dev tool's elements panel.
+
+There are many solutions for working programmatically with CSS and components:
+
+- [Stitches](https://stitches.dev)
+- [Emotion](https://emotion.sh/docs/introduction)
 
 We will use [Styled Components](https://styled-components.com/) to refactor our CSS.
 
