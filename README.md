@@ -8,10 +8,11 @@ Read the React documentation for [Hooks](https://reactjs.org/docs/hooks-intro.ht
 
 The midterm assignment is to refactor All the News including (but not limited to):
 
+1. Correct the "#top" bug (see the logo)
 1. destructuring all props in the components (e.g. no more `props.story` or `story.title`)
-2. converting all css to styled components (you should delete all css files after completion)
-3. using the directory structure outlined below (e.g. `story > index.js & styles.js`)
-4. creating a Loading component:
+1. converting all css to styled components (you should delete all css files after completion)
+1. using the directory structure outlined below (e.g. `story > index.js & styles.js`)
+1. creating a Loading component:
 
 ```js
 import React from "react";
