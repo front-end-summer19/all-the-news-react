@@ -6,7 +6,9 @@ Read the React documentation for [Hooks](https://reactjs.org/docs/hooks-intro.ht
 
 ## Midterm
 
-The midterm assignment is to refactor All the News including (but not limited to):
+TBD
+
+<!-- The midterm assignment is to refactor All the News including (but not limited to):
 
 1. Correct the "#top" bug (see the logo)
 1. destructuring all props in the components (e.g. no more `props.story` or `story.title`)
@@ -15,8 +17,6 @@ The midterm assignment is to refactor All the News including (but not limited to
 1. creating a Loading component:
 
 ```js
-import React from "react";
-
 const Loading = () => {
   return (
     <div className="loading">
@@ -69,31 +69,50 @@ And displays this [SVG file](https://codepen.io/aurer/pen/jEGbA) while loading i
       repeatCount="indefinite"/>
     </path>
   </svg>
-```
+``` -->
 
 ## Exercise
 
-In the first session we created a [single page app](https://react-pirates.netlify.app/) using vanilla js. In this class we will use React.
+In the first session we created a single page app using vanilla js. In this class we will use Preact which is (for our purposes) identical to React - just much smalled and faster. We will also explore a Create React App alternative. [Vite](https://vitejs.dev/) is simpler and faster. The [setup instructions](https://vitejs.dev/guide/#scaffolding-your-first-vite-project) are in the Get Started section.
+
+The builds will be much smaller:
+
+```text
+React: 
+46.9 kB (-1 B)  build/static/js/main.d2f0e90f.js
+
+Preact:
+dist/assets/index-BeomYdVh.js  15.28 kB │ gzip: 6.34 kB
+```
 
 `cd` into your class working folder (top level, not this repo) and run:
 
-`npx create-react-app all-the-new-react`
+`npm create vite@latest` - set the project name to "all-the-news-vite", select `Preact` as the framework, `JavaScript` as the variant, and follow the instructions:
 
-`cd` into the new project and `$ npm start` the application.
+```sh
+cd vite-project
+npm install
+npm run dev
+```
 
-Examine the application structure.
+Examine the application structure. 
 
-Copy the public folder from today's download and replace the public folder in the newly created app with it.
+- there is no `eject` here
+- the number of dependencies is drastically reduced  
+- `index.html` is not in the `public` folder
+- we see the use of `.jsx` and lower-case naming for files which contain components.
+
+Vite does not use Webpack to run. Instead it leverages native browser modules - `<script type="module" src="/src/main.jsx"></script>`.
+
+Copy the `css` and `img` directories from today's download and add them to the public folder in the newly created app.
 
 ## Create the Header Component
 
-Begin by creating a simple functional component in the components folder:
+Begin by creating a simple functional component in a components folder:
 
 `src/components/Header.js`:
 
 ```js
-import React from "react";
-
 const Header = (props) => {
   return (
     <header>
@@ -105,10 +124,9 @@ const Header = (props) => {
 export default Header;
 ```
 
-App.js:
+App.jsx:
 
 ```js
-import React from "react";
 import Header from "./components/Header";
 
 function App() {
@@ -124,11 +142,9 @@ export default App;
 
 ## The Nav Component
 
-Create Nav.js in the components folder:
+Create `src/components/Nav.js` in the components folder:
 
 ```js
-import React from "react";
-
 const Nav = (props) => {
   return (
     <nav>
@@ -142,10 +158,9 @@ const Nav = (props) => {
 export default Nav;
 ```
 
-Import into App.js and compose it:
+Import into App.jsx and compose it:
 
 ```js
-import React from "react";
 import Header from "./components/Header";
 import Nav from "./components/Nav";
 
@@ -161,20 +176,19 @@ function App() {
 export default App;
 ```
 
-In App.js add our nav items:
+In App.jsx add our nav items:
 
 ```js
-const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
 ```
 
 And send them, via props, to the Nav component:
 
 ```js
-import React from "react";
 import Header from "./components/Header";
 import Nav from "./components/Nav";
 
-const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
 
 function App() {
   return (
@@ -188,13 +202,11 @@ function App() {
 export default App;
 ```
 
-Use the React developer tool to inspect the Nav component and ensure the navItems props exists and are available in Nav.js.
+Use the [Preact developer tool](https://chromewebstore.google.com/detail/preact-developer-tools/ilcajpmogmhpliinlbcdebhbcanbghmd) to inspect the Nav component and ensure the navItems props exists and are available in Nav.js.
 
 Now we can build out the nav items using props:
 
 ```js
-import React from "react";
-
 const Nav = (props) => {
   return (
     <nav>
@@ -212,17 +224,15 @@ const Nav = (props) => {
 export default Nav;
 ```
 
-Note the use of a template string above to add the hash.
+Note the use of a template string above to add a hash to the href.
 
-Note that when calling `.map` we are not using curly `{ ... }` but rounded braces `( ... )`. We are using an implicit return.
+Note that when calling `.map((navItem)` here we are not using curly `{ ... }` but rounded braces `( ... )`. All the code could exist on a single line and we are using the arrow function's implicit return.
 
 ## The Stories Component
 
-Create a Stories component:.
+Create `src/components/Stories.jsx` component:.
 
 ```js
-import React from "react";
-
 const Stories = (props) => {
   return (
     <div className="site-wrap">
@@ -236,17 +246,16 @@ const Stories = (props) => {
 export default Stories;
 ```
 
-`JSON.stringify(props.stories, null, 2)` will take our stories data and display it. We've added `<pre>` and `<code>` tags to make it readable. This is a very common technique used when you prefer to examine the data in the UI instead of the console.
+`JSON.stringify(props.stories, null, 2)` will take our stories data and dump it into the UI. We've added `<pre>` and `<code>` tags to make it more readable. This is a very common technique used when you prefer to examine the data in the UI instead of the console.
 
-And import / compose it in App.js:
+And import / compose it in app.jsx:
 
 ```js
-import React from "react";
 import Header from "./components/Header";
 import Nav from "./components/Nav";
 import Stories from "./components/Stories";
 
-const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
 
 function App() {
   return (
@@ -266,20 +275,19 @@ export default App;
 We could add the data fetching capability in the Stories component as follows:
 
 ```js
-import React from "react";
-
-const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
+import { useState, useEffect } from "preact/hooks";
+const NYT_API = "KgGi6DjX1FRV8AlFewvDqQ8IYFGzAcHM";
 
 const Stories = () => {
-  const [stories, setStories] = React.useState([]);
+  const [stories, setStories] = useState([]);
 
-  React.useState(() => {
+  useEffect(() => {
     fetch(
-      `https://api.nytimes.com/svc/topstories/v2/arts.json?api-key=${nytapi}`
+      `https://api.nytimes.com/svc/topstories/v2/arts.json?api-key=${NYT_API}`
     )
       .then((response) => response.json())
       .then((data) => setStories({ stories: data }));
-  });
+  }, []);
 
   return (
     <div className="site-wrap">
@@ -293,28 +301,28 @@ const Stories = () => {
 export default Stories;
 ```
 
-But it is better to centralize your data at the highest level of the React tree. React has a one way data flow.
+But it is better to centralize your data at the highest level of the tree. Like React, Preact has a one way data flow.
 
 <!-- END DEMO -->
 
 ## State in App
 
-We want to store the stories data in App.js.
+We want to store the stories data in app.jsx.
 
-Let's begin by creating two pieces of state in App.js:
+Let's begin by creating two pieces of state in app.jsx:
 
 ```js
-import React from "react";
 import Header from "./components/Header";
 import Nav from "./components/Nav";
 import Stories from "./components/Stories";
+import { useState } from "preact/hooks";
 
-const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
 
 function App() {
   // HERE
-  const [stories, setStories] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   return (
     <>
@@ -330,32 +338,45 @@ export default App;
 
 We initialize stories as an empty array and add a bit of state to track whether the data is loading.
 
-Now we add variables for the api key and default section and use the `useEffect` hook to fetch the data and then we pass it to the Stories component as a prop. We also pass the stories state to the Stories component.
+Note: impoting hooks in Preact:
 
-App.js:
+`import { useState } from "preact/hooks";`
+
+is different from React:
+
+ `import { useState } from "react";`
+
+Next we add variables for the api key and default section and use the `useEffect` hook to fetch the data and then we pass it to the Stories component as a prop. We also pass the stories state to the Stories component.
+
+app.jsx:
 
 ```js
-import React from "react";
 import Header from "./components/Header";
 import Nav from "./components/Nav";
 import Stories from "./components/Stories";
+import { useState, useEffect } from "preact/hooks";
 
-const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
 // HERE
-const fetchUrl = "https://api.nytimes.com/svc/topstories/v2/";
-const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
+const FETCH_URL = "https://api.nytimes.com/svc/topstories/v2/";
+const NYT_API = "KgGi6DjX1FRV8AlFewvDqQ8IYFGzAcHM";
 const section = "arts";
 
 function App() {
-  const [stories, setStories] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  React.useEffect(() => {
-    fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
+  useEffect(() => {
+    fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
       .then((response) => response.json())
-      .then((myJson) => localStorage.setItem(section, JSON.stringify(myJson)))
-      .then((data) => setStories(data.results));
+      // .then((myJson) => localStorage.setItem(section, JSON.stringify(myJson)))
+      .then((data) => setStorageAndState(data.results));
   }, []);
+
+  function setStorageAndState(data) {
+    localStorage.setItem(section, JSON.stringify(data));
+    setStories(data.results);
+  }
 
   return (
     <>
@@ -369,45 +390,39 @@ function App() {
 export default App;
 ```
 
-Ensure that arts is in localstorage.
-
-Ensure that arts is in state using the React dev tool.
+Ensure that arts is in localstorage and that arts is in state using the Preact dev tool.
 
 ## useEffect
 
 In computer science, a function or expression is said to have a "side effect" if it modifies some state outside its scope or has an observable interaction with its calling functions or the outside world besides returning a value. An "effect" is anything outside your application and includes things like cookies and fetching API data.
 
-The useEffect Hook lets you perform side effects in React components. By using this Hook, you tell React that your component needs to do something after it renders. By default, it runs both after the first render and after every update but we'll be customizing it to run only when the section (arts, music etc.) changes. For now, we are only using one section - arts.
+The `useEffect` Hook lets you perform side effects in React components. By using this Hook, you tell React that your component needs to do something after it renders. By default, it runs both after the first render and after every update but we'll be customizing it to run only when the section (arts, music etc.) changes. For now, we are only using one section - arts.
 
 The full function signature looks like this:
 
 ```js
-React.useEffect(callbackFunction, []);
+useEffect(callbackFunction, []);
 ```
 
-Note the empty array that is the second argument in useEffect. An empty array causes the effect to run only once after the component renders and again when the component unmounts or just before it is removed. `[]` tells React that your effect doesn’t depend on any values from props or state, so it never needs to re-run.
+Note the empty array that is the second argument in useEffect. An empty array causes the effect to run only once after the component renders and again when the component unmounts or just before it is removed. `[]` tells React/Preact that your effect doesn’t depend on any values from props or state, so it never needs to re-run.
 
 ## localStorage
 
-Here is a [possibly useful article](https://www.freecodecamp.org/news/how-to-use-localstorage-with-react-hooks-to-set-and-get-items/) on localStage in React (hint: its not that different that in is in Vanilla JS).
+Here is a [possibly useful article](https://www.freecodecamp.org/news/how-to-use-localstorage-with-react-hooks-to-set-and-get-items/) on localStorage in React (hint: its not that different that in is in Vanilla JS).
 
 Add an if/else statement similar to what we used in a previous exercise.
 
 ```js
-React.useEffect(() => {
+useEffect(() => {
   if (!localStorage.getItem(section)) {
     console.log("fetching from NYT");
-    fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
+    fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
       .then((response) => response.json())
-      .then((myJson) => {
-        localStorage.setItem(section, JSON.stringify(myJson.results));
-      })
-      .then(() => setStories(JSON.parse(localStorage.getItem(section))));
+      .then((data) => setStories(data.results));
   } else {
     console.log("section is in storage, not fetching");
     setStories(JSON.parse(localStorage.getItem(section)));
   }
-  console.log(JSON.parse(localStorage.getItem(section)));
 }, [section]);
 ```
 
@@ -419,55 +434,6 @@ Change the section variable:
 
 Note that the useEffect hook ran and the books data is in localStorage.
 
-```js
-import React from "react";
-
-const Counter = () => {
-  const [count, setCount] = React.useState(0);
-
-  return (
-    <div>
-      <h1>{count}</h1>
-      <button onClick={() => setCount(count + 1)}>Increase</button>
-    </div>
-  );
-};
-
-export default Counter;
-```
-
-```js
-import React from "react";
-
-const Counter = () => {
-  const [count, setCount] = React.useState(0);
-
-  // NEW
-  React.useEffect(() => {
-    document.title = `(${count}) — Counter`;
-  });
-
-  // EMPTY DEPENDENCY ARRAY
-  //   React.useEffect(() => {
-  //     document.title = `(${count}) — Counter`;
-  //   }, []);
-
-  // WITH DEPENDENCY ARRAY
-  //   React.useEffect(() => {
-  //     document.title = `(${count}) — Counter`;
-  //   }, [count]);
-
-  return (
-    <div>
-      <h1>{count}</h1>
-      <button onClick={() => setCount(count + 1)}>Increase</button>
-    </div>
-  );
-};
-
-export default Counter;
-```
-
 ## The Story Component
 
 Rather than rendering everything in the stories component we'll pass that duty off to a component called Story (singluar).
@@ -475,8 +441,6 @@ Rather than rendering everything in the stories component we'll pass that duty o
 Create Story.js:
 
 ```js
-import React from "react";
-
 const Story = (props) => {
   return (
     <div className="entry">
@@ -500,12 +464,11 @@ return (
 );
 ```
 
-We will render multiple story components from Stories.js with a key set to the story's index.
+We will render multiple Story components from Stories.js with a key set to the story's index.
 
 Stories.js:
 
 ```js
-import React from "react";
 import Story from "./Story";
 
 const Stories = (props) => {
@@ -526,8 +489,6 @@ Now, in Story.js, begin building out the content.
 First the images:
 
 ```js
-import React from "react";
-
 const Story = (props) => {
   return (
     <div className="entry">
@@ -549,8 +510,6 @@ export default Story;
 And then the content:
 
 ```js
-import React from "react";
-
 const Story = (props) => {
   return (
     <div className="entry">
@@ -586,36 +545,37 @@ Set isLoading to false by default in the initial declaration, then set it to tru
 We'll also add an if statment that shows "Loading" while the data is loading.
 
 ```js
-import React from "react";
-import Header from "./components/Header";
+import Header from "./components/header";
 import Nav from "./components/Nav";
 import Stories from "./components/Stories";
+import { useState, useEffect } from "preact/hooks";
 
-const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
-const fetchUrl = "https://api.nytimes.com/svc/topstories/v2/";
-const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
-const section = "arts";
+const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
+const FETCH_URL = "https://api.nytimes.com/svc/topstories/v2/";
+const NYT_API = "KgGi6DjX1FRV8AlFewvDqQ8IYFGzAcHM";
 
 function App() {
-  const [stories, setStories] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [section, setSection] = useState("arts");
 
-  React.useEffect(() => {
+  useEffect(() => {
     setLoading(true);
     if (!localStorage.getItem(section)) {
       console.log("fetching from NYT");
-      fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
+      fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
         .then((response) => response.json())
-        .then((myJson) => {
-          localStorage.setItem(section, JSON.stringify(myJson.results));
-        })
-        .then(() => setStories(JSON.parse(localStorage.getItem(section))));
+        .then((data) => setStories(data.results));
     } else {
-      console.log("not fetching");
+      console.log("section is in storage, not fetching");
       setStories(JSON.parse(localStorage.getItem(section)));
     }
-    console.log(JSON.parse(localStorage.getItem(section)));
-  }, []);
+  }, [section]);
+
+  useEffect(() => {
+    console.log("setting localstorage");
+    localStorage.setItem(section, JSON.stringify(stories));
+  }, [stories]);
 
   if (loading) {
     return <h2>Loading...</h2>;
@@ -629,8 +589,6 @@ function App() {
     </>
   );
 }
-
-export default App;
 ```
 
 If you leave the loading state true after the fetch you should see the early return.
@@ -643,18 +601,18 @@ Set it to false at the end of the useEffect function:
 
 ## Refactor
 
-Simplify App.js by moving some of the functionality in App.js into a new `scr/api.js` file:
+Simplify App.jsx by moving some of the functionality in App.jsx into a new `scr/api.js` file:
 
 ```js
-const fetchUrl = "https://api.nytimes.com/svc/topstories/v2/";
-const nytapi = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
+const FETCH_URL = "https://api.nytimes.com/svc/topstories/v2/";
+const NYT_API = "RuG9N6lD1Xss81PdRbmhuiJHjuiPEt6R";
 
 export function fetchStoriesFromLocalStorage(section, setStories) {
   setStories(JSON.parse(localStorage.getItem(section)));
 }
 
 export function fetchStoriesFromNYTimes(section, setStories) {
-  fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
+  fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
     .then((response) => response.json())
     .then((myJson) => {
       localStorage.setItem(section, JSON.stringify(myJson.results));
@@ -683,7 +641,7 @@ Compare the `fetchStoriesFromNYTimes` function above with the one below in light
 
 ```js
 export function fetchStoriesFromNYTimes(section, setStories) {
-  fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`)
+  fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
     .then((response) => response.json())
     .then((myJson) => {
       localStorage.setItem(section, JSON.stringify(myJson.results));
@@ -706,7 +664,7 @@ async someFunc() {
 ```js
 export async function fetchStoriesFromNYTimes(section, setStories) {
   try {
-    let response = await fetch(`${fetchUrl}${section}.json?api-key=${nytapi}`);
+    let response = await fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`);
     console.log("response::", response);
     let data = await response.json();
     console.log("data::", data);
@@ -725,20 +683,19 @@ See the "async-await-vs-then" folder in today's repo.
 Import api and use it in the App component:
 
 ```js
-import React from "react";
 import Header from "./components/Header";
 import Nav from "./components/Nav";
 import Stories from "./components/Stories";
 import { fetchStoriesFromLocalStorage, fetchStoriesFromNYTimes } from "./api";
 
-const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
 
 function App() {
-  const [stories, setStories] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  const [section, setSection] = React.useState("arts");
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [section, setSection] = useState("arts");
 
-  React.useEffect(() => {
+  useEffect(() => {
     setLoading(true);
     if (!localStorage.getItem(section)) {
       fetchStoriesFromNYTimes(section, setStories);
@@ -766,9 +723,9 @@ export default App;
 
 ## Multiple Sections
 
-Currently our app only renders the arts section. We need to code the navbar tabs to communicate with App.js in order to call fetch for additional sections.
+Currently our app only renders the arts section. We need to code the navbar tabs to communicate with App.jsx in order to call fetch for additional sections.
 
-Since clicking on the nav is what changes the section we'll pass `setSection` into the Nav in App.js:
+Since clicking on the nav is what changes the section we'll pass `setSection` into the Nav in App.jsx:
 
 ```js
 return (
@@ -785,8 +742,6 @@ We'll use a new component in Nav to display each of the nav elements.
 Create NavItem.js:
 
 ```js
-import React from "react";
-
 const NavItem = (props) => {
   return (
     <li>
@@ -800,7 +755,6 @@ export default NavItem;
 Import it and compose it in Nav.js:
 
 ```js
-import React from "react";
 import NavItem from "./NavItem";
 
 const Nav = (props) => {
@@ -821,7 +775,6 @@ export default Nav;
 Now we need to pass the setSection function to NavItem from Nav.js:
 
 ```js
-import React from "react";
 import NavItem from "./NavItem";
 
 const Nav = (props) => {
@@ -846,8 +799,6 @@ export default Nav;
 Once in NavItem we will create a local function `sendSection` and run it on an onClick event:
 
 ```js
-import React from "react";
-
 const NavItem = (props) => {
   const sendSection = (section) => {
     props.setSection(section);
@@ -864,10 +815,10 @@ const NavItem = (props) => {
 export default NavItem;
 ```
 
-The click event now communicates with the setSection function in App.js and our useState hook runs again when the section changes:
+The click event now communicates with the setSection function in App.jsx and our useState hook runs again when the section changes:
 
 ```js
-React.useEffect(() => {
+useEffect(() => {
   setLoading(true);
   if (!localStorage.getItem(section)) {
     fetchStoriesFromNYTimes(section, setStories);
@@ -889,7 +840,6 @@ Test it in the browser.
 Add the logo list item to Nav.js:
 
 ```js
-import React from "react";
 import NavItem from "./NavItem";
 
 const Nav = (props) => {
@@ -954,7 +904,7 @@ Compose it in Nav.js:
 
 We'll also add a header to the top of the article list.
 
-In App.js:
+In App.jsx:
 
 ```js
 <Stories stories={stories} section={section} />
@@ -963,7 +913,6 @@ In App.js:
 In Stories.js:
 
 ```js
-import React from "react";
 import Story from "./Story";
 
 const Stories = (props) => {
@@ -988,7 +937,7 @@ We can use the section state to set the activeLink property.
 
 Pass the section info to the Nav component.
 
-In App.js:
+In App.jsx:
 
 ```js
 <Nav navItems={navItems} setSection={setSection} section={section} />
@@ -997,7 +946,6 @@ In App.js:
 And then forward the property from Nav to the NavItem component:
 
 ```js
-import React from "react";
 import NavItem from "./NavItem";
 import { Logo } from "./Logo";
 
@@ -1029,8 +977,6 @@ export default Nav;
 Use the section in a ternary expression to set the class name:
 
 ```js
-import React from "react";
-
 const NavItem = (props) => {
   const sendSection = (section) => {
     props.setSection(section);
@@ -1084,16 +1030,15 @@ nav a:not(.active):hover {
 
 ## DEMO Cookies
 
-Currently if a user refreshes the page the section is reset to the default: `const [section, setSection] = React.useState("arts");`. We could store the current section in a cookie to prevent this.
+Currently if a user refreshes the page the section is reset to the default: `const [section, setSection] = useState("arts");`. We could store the current section in a cookie to prevent this.
 
 ```js
-import React from "react";
 import Header from "./components/Header";
 import Nav from "./components/Nav";
 import Stories from "./components/Stories";
 import { fetchStoriesFromLocalStorage, fetchStoriesFromNYTimes } from "./api";
 
-const navItems = ["arts", "books", "fashion", "food", "movies", "travel"];
+const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
 
 const getExpirationDate = (time) => {
   return new Date(+new Date() + time).toUTCString();
@@ -1112,18 +1057,18 @@ if (cookieVal) {
 }
 
 function App() {
-  const [stories, setStories] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  // const [section, setSection] = React.useState("arts");
-  const [section, setSection] = React.useState(cookieVal || "arts");
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  // const [section, setSection] = useState("arts");
+  const [section, setSection] = useState(cookieVal || "arts");
 
-  React.useEffect(() => {
+  useEffect(() => {
     document.cookie = `section=${section}; expires=${getExpirationDate(
       1000 * 60 * 60 * 24 * 7
     )}`;
   }, [section]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setLoading(true);
     if (!localStorage.getItem(section)) {
       fetchStoriesFromNYTimes(section, setStories);
@@ -1162,10 +1107,10 @@ const url = new URL(window.location.href);
 const hash = url.hash.slice(1);
 ```
 
-Do this within a `useEffect` hook in App.js:
+Do this within a `useEffect` hook in App.jsx:
 
 ```js
-React.useEffect(() => {
+useEffect(() => {
   const url = new URL(window.location.href);
   const hash = url.hash.slice(1);
   if (hash !== "undefined") {
@@ -1193,7 +1138,6 @@ We will use [Styled Components](https://styled-components.com/) to refactor our 
 We'll start on the lower level components and work our way up beginning with the Story component:
 
 ```js
-import React from "react";
 import styled from "styled-components";
 
 const Entry = styled.article`
@@ -1243,7 +1187,6 @@ Now we can remove any css from 'styles.css` that references the class entry.
 To make things interesting we are going to add a link around the entire component to make the whole entry clickable.
 
 ```js
-import React from "react";
 import styled from "styled-components";
 
 const Wrapper = styled.a`
@@ -1338,7 +1281,6 @@ export const StoryPara = styled.p`
 Import the named exports into the Story component and destructure the props:
 
 ```js
-import React from "react";
 import { Wrapper, Entry, StoryImg, StoryTitle, StoryPara } from "./styles";
 
 const Story = ({ story: { short_url, multimedia, title, abstract } }) => {
@@ -1371,7 +1313,6 @@ import Story from "./story";
 Use styled components in Stories:
 
 ```js
-import React from "react";
 import Story from "../story";
 
 import { Wrapper, PageHeader } from "./styles";
