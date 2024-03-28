@@ -85,6 +85,8 @@ Preact:
 dist/assets/index-BeomYdVh.js  15.28 kB │ gzip: 6.34 kB
 ```
 
+Here are the differences between [React and Preact](https://preactjs.com/guide/v10/differences-to-react/).
+
 `cd` into your class working folder (top level, not this repo) and run:
 
 `npm create vite@latest` - set the project name to "all-the-news-vite", select `Preact` as the framework, `JavaScript` as the variant, and follow the instructions:
