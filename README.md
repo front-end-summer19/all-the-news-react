@@ -281,7 +281,7 @@ function App() {
 export default App;
 ```
 
-## Demo: State
+<!-- ## Demo: State
 
 We could add the data fetching capability _in the Stories component_ as follows:
 
@@ -312,7 +312,7 @@ const Stories = () => {
 export default Stories;
 ```
 
-But it is better to centralize your data at the highest level of the tree. Like React, Preact has a one way data flow.
+But it is better to centralize your data at the highest level of the tree. Like React, Preact has a one way data flow. -->
 
 <!-- END DEMO -->
 
@@ -454,9 +454,9 @@ Note that the useEffect hook ran and the books data is in localStorage.
 
 ## The Story Component
 
-Rather than rendering everything in the stories component we'll pass that duty off to a component called Story (singluar).
+Rather than rendering everything in the stories component we'll pass that duty off to a component called Story.jsx (singluar).
 
-Create Story.js:
+Create `src/components/Story.jsx`:
 
 ```js
 const Story = (props) => {
@@ -482,6 +482,8 @@ return (
 );
 ``` -->
 
+Note: the stories are being passed to the Stories component: `<Stories stories={stories} />`
+
 We will render multiple Story components from Stories.js with a key set to the story's index.
 
 Stories.js:
@@ -489,10 +491,10 @@ Stories.js:
 ```js
 import Story from "./Story";
 
-const Stories = (props) => {
+const Stories = ({ stories }) => {
   return (
-    <div className="site-wrap">
-      {props.stories.map((story, index) => (
+    <div class="site-wrap">
+      {stories.map((story, index) => (
         <Story key={index} story={story} />
       ))}
     </div>
@@ -599,10 +601,12 @@ export function App() {
   useEffect(() => {
     if (!localStorage.getItem(section)) {
       console.log("fetching from NYT");
+      // HERE
       setLoading(true);
       fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
         .then((response) => response.json())
         .then((data) => setStories(data.results));
+      // HERE
       setLoading(false);
     } else {
       console.log("section is in storage, not fetching");
@@ -615,6 +619,7 @@ export function App() {
     setStories(data.results);
   }
 
+  // HERE
   if (loading) {
     return <h2>Loading...</h2>;
   }
@@ -640,6 +645,8 @@ Set it to false at the end of the useEffect function:
 Next we will make the section dynamic. Remove the section variable (const section = "books") and add it to the state.
 
 ```js
+// const section = "books";
+...
 const [section, setSection] = useState("arts");
 ```
 
@@ -655,11 +662,11 @@ useEffect(() => {
 This allows us to remove the initializing useState functionality in the first useEffect function.
 
 ```js
-useEffect(() => {
-  fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
-    .then((response) => response.json())
-    .then((data) => setStorageAndState(data));
-}, []);
+// useEffect(() => {
+//   fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
+//     .then((response) => response.json())
+//     .then((data) => setStorageAndState(data));
+// }, []);
 ```
 
 Here is the full App component with a `.catch` added at the end of the promise chain to log any errors that might occur:
@@ -847,6 +854,7 @@ Since clicking on the nav is what changes the section we'll pass `setSection` in
 return (
   <>
     <Header siteTitle="All the News that Fits We Print" />
+    {/* HERE */}
     <Nav navItems={NAVITEMS} setSection={setSection} />
     <Stories stories={stories} />
   </>
@@ -855,7 +863,7 @@ return (
 
 We'll use a new component in Nav to display each of the nav elements.
 
-Create NavItem.js:
+Create `/src/components/NavItem.js`:
 
 ```js
 const NavItem = (props) => {
@@ -901,6 +909,7 @@ const Nav = (props) => {
           <NavItem
             key={index}
             navItem={navItem}
+            // HERE
             setSection={props.setSection}
           />
         ))}
@@ -912,7 +921,7 @@ const Nav = (props) => {
 export default Nav;
 ```
 
-Once in NavItem we will create a local function `sendSection` and run it on an onClick event:
+Back in `NavItem` we will create a local function `sendSection` and run it on an onClick event:
 
 ```js
 const NavItem = (props) => {
@@ -934,6 +943,7 @@ export default NavItem;
 The click event now communicates with the setSection function in App.jsx and our useState hook runs again when the section changes:
 
 ```js
+// This code is already in app.jsx
 useEffect(() => {
   if (!localStorage.getItem(section)) {
     console.log("fetching from NYT");
@@ -1059,7 +1069,7 @@ We can use the section state to set the activeLink property.
 
 Pass the section info to the Nav component.
 
-In App.jsx:
+In `app.jsx`:
 
 ```js
 <Nav navItems={NAVITEMS} setSection={setSection} section={section} />
@@ -1113,7 +1123,7 @@ const NavItem = (props) => {
 export default NavItem;
 ```
 
-Note the supporting CSS for this in the public folder:
+The supporting CSS for this is in the public folder:
 
 ```css
 nav ul {
@@ -1214,7 +1224,7 @@ export default App;
 
 ## URL Parameters
 
-A better method might be to use the URL hashes in the browser's location. Cookies are set on the user's browser, but what would happen if our user copied the url from the browser and sent it to another person? (Answer: the default "arts" section would be displayed. Not good.)
+What would happen if our user copied the url from the browser and sent it to another person? Answer: the default "arts" section would be displayed. Not good. Let's fix that.
 
 First, [get the URL](https://gomakethings.com/getting-values-from-a-url-with-vanilla-js/) and convert the URL string into a URL object using the new URL() constructor.
 
@@ -1243,7 +1253,9 @@ useEffect(() => {
 }, []);
 ```
 
-And set the state for section to an empty string on initialization.
+## Homework
+
+Examine the Local Storage in the browser's dev tools. Try reloading the browser. Your assignment os to fix the issue.
 
 <!-- ## Styled Components
 
