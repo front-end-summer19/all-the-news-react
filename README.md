@@ -78,7 +78,7 @@ In the first session we created a single page app using vanilla js. In this clas
 The builds will be much smaller:
 
 ```text
-React: 
+React:
 46.9 kB (-1 B)  build/static/js/main.d2f0e90f.js
 
 Preact:
@@ -97,16 +97,25 @@ npm install
 npm run dev
 ```
 
-Examine the application structure. 
+Examine the application structure.
 
 - there is no `eject` here
-- the number of dependencies is drastically reduced  
+- the number of dependencies is drastically reduced
 - `index.html` is not in the `public` folder
 - we see the use of `.jsx` and lower-case naming for files which contain components.
 
 Vite does not use Webpack to run. Instead it leverages native browser modules - `<script type="module" src="/src/main.jsx"></script>`.
 
 Copy the `css` and `img` directories from today's download and add them to the public folder in the newly created app.
+
+Add a link tag to `index.html` to load the custom fint:
+
+```html
+<link
+  href="https://fonts.googleapis.com/css?family=Lobster&display=swap"
+  rel="stylesheet"
+/>
+```
 
 ## Create the Header Component
 
@@ -126,7 +135,7 @@ const Header = (props) => {
 export default Header;
 ```
 
-App.jsx:
+Import and compose it in App.jsx:
 
 ```js
 import Header from "./components/Header";
@@ -196,7 +205,7 @@ function App() {
   return (
     <>
       <Header siteTitle="All the News that Fits We Print" />
-      <Nav navItems={navItems} />
+      <Nav navItems={NAVITEMS} />
     </>
   );
 }
@@ -248,9 +257,9 @@ const Stories = (props) => {
 export default Stories;
 ```
 
-`JSON.stringify(props.stories, null, 2)` will take our stories data and dump it into the UI. We've added `<pre>` and `<code>` tags to make it more readable. This is a very common technique used when you prefer to examine the data in the UI instead of the console.
+`JSON.stringify(props.stories, null, 2)` will take our stories data and dump it into the UI. We've added `<pre>` and `<code>` tags to make it more readable. This is a very common technique often used when you prefer to examine the data in the UI instead of the console.
 
-And import / compose it in app.jsx:
+Import and compose the Stories component in app.jsx:
 
 ```js
 import Header from "./components/Header";
@@ -274,7 +283,7 @@ export default App;
 
 ## Demo: State
 
-We could add the data fetching capability in the Stories component as follows:
+We could add the data fetching capability _in the Stories component_ as follows:
 
 ```js
 import { useState, useEffect } from "preact/hooks";
@@ -340,15 +349,25 @@ export default App;
 
 We initialize stories as an empty array and add a bit of state to track whether the data is loading.
 
-Note: impoting hooks in Preact:
+Note: importing hooks in Preact:
 
 `import { useState } from "preact/hooks";`
 
 is different from React:
 
- `import { useState } from "react";`
+`import { useState } from "react";`
 
-Next we add variables for the api key and default section and use the `useEffect` hook to fetch the data and then we pass it to the Stories component as a prop. We also pass the stories state to the Stories component.
+Also note that the `render` function is imported from `preact` in `main.jsx`:
+
+```js
+import { render } from "preact";
+```
+
+Add variables for the api key and set a default section.
+
+Import and use the `useEffect` hook to fetch the data and then pass it to the Stories component as a prop.
+
+We also pass the stories state to the Stories component.
 
 app.jsx:
 
@@ -364,14 +383,13 @@ const FETCH_URL = "https://api.nytimes.com/svc/topstories/v2/";
 const NYT_API = "KgGi6DjX1FRV8AlFewvDqQ8IYFGzAcHM";
 const section = "arts";
 
-function App() {
+export function App() {
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
       .then((response) => response.json())
-      // .then((myJson) => localStorage.setItem(section, JSON.stringify(myJson)))
       .then((data) => setStorageAndState(data.results));
   }, []);
 
@@ -383,16 +401,14 @@ function App() {
   return (
     <>
       <Header siteTitle="All the News that Fits We Print" />
-      <Nav navItems={navItems} />
-      <Stories />
+      <Nav navItems={NAVITEMS} />
+      <Stories stories={stories} />
     </>
   );
 }
-
-export default App;
 ```
 
-Ensure that arts is in localstorage and that arts is in state using the Preact dev tool.
+Ensure that arts is in localstorage and that it is in state using the Preact dev tool.
 
 ## useEffect
 
@@ -454,7 +470,7 @@ const Story = (props) => {
 export default Story;
 ```
 
-Pass the stories data down to the Stories component:
+<!-- Pass the stories data down to the Stories component:
 
 ```js
 return (
@@ -464,7 +480,7 @@ return (
     <Stories stories={stories} />
   </>
 );
-```
+``` -->
 
 We will render multiple Story components from Stories.js with a key set to the story's index.
 
@@ -536,38 +552,142 @@ const Story = (props) => {
 export default Story;
 ```
 
+Adjust the CSS grid:
+
+```css
+.entry {
+  display: grid;
+  /* HERE */
+  grid-template-columns: 3fr 5fr;
+  grid-column-gap: 1rem;
+  margin-bottom: 1rem;
+  grid-area: "entry";
+}
+```
+
 ## Loading
 
-Allow data to be fetched before we try to render the rest of the application.
+Allow data to be fetched before we render the rest of the application.
 
-Let's switch the isLoading piece of state to true while the fetch operation is under way and set it to false once the operation has completed.
+Let's switch the setLoading piece of state to true while the fetch operation is under way and set it to false once the operation has completed.
 
-Set isLoading to false by default in the initial declaration, then set it to true before the fetch operation, and finally set it back to false afterwards.
+Set setLoading to false by default in the initial declaration, then set it to true before the fetch operation, and finally set it back to false afterwards.
 
-We'll also add an if statment that shows "Loading" while the data is loading.
+We'll also add an if statement that shows "Loading" while the data is loading.
 
 ```js
-import Header from "./components/header";
+import Header from "./components/Header";
 import Nav from "./components/Nav";
 import Stories from "./components/Stories";
 import { useState, useEffect } from "preact/hooks";
 
 const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
 const FETCH_URL = "https://api.nytimes.com/svc/topstories/v2/";
-const NYT_API = "KgGi6DjX1FRV8AlFewvDqQ8IYFGzAcHM";
+const NYT_API = "PGQuh0auTqHC6HEx4gADBhT2yLCdXYbN";
+const section = "books";
 
-function App() {
+export function App() {
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
+      .then((response) => response.json())
+      .then((data) => setStorageAndState(data));
+  }, []);
+
+  useEffect(() => {
+    if (!localStorage.getItem(section)) {
+      console.log("fetching from NYT");
+      setLoading(true);
+      fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
+        .then((response) => response.json())
+        .then((data) => setStories(data.results));
+      setLoading(false);
+    } else {
+      console.log("section is in storage, not fetching");
+      setStories(JSON.parse(localStorage.getItem(section)));
+    }
+  }, [section]);
+
+  function setStorageAndState(data) {
+    localStorage.setItem(section, JSON.stringify(data.results));
+    setStories(data.results);
+  }
+
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
+
+  return (
+    <>
+      <Header siteTitle="All the News That Fits We Print" />
+      <Nav navItems={NAVITEMS} />
+      <Stories stories={stories} />
+    </>
+  );
+}
+```
+
+If you leave the loading state true after the fetch you should see the early return.
+
+Set it to false at the end of the useEffect function:
+
+`setLoading(false);`
+
+(We can also see the loading block by slowing loading in the Network tab of the developer tools.)
+
+Next we will make the section dynamic. Remove the section variable (const section = "books") and add it to the state.
+
+```js
+const [section, setSection] = useState("arts");
+```
+
+While we are at it we will use useEffect to store the section in localStorage when the stories change.
+
+```js
+useEffect(() => {
+  console.log("setting localstorage");
+  localStorage.setItem(section, JSON.stringify(stories));
+}, [stories]);
+```
+
+This allows us to remove the initializing useState functionality in the first useEffect function.
+
+```js
+useEffect(() => {
+  fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
+    .then((response) => response.json())
+    .then((data) => setStorageAndState(data));
+}, []);
+```
+
+Here is the full App component with a `.catch` added at the end of the promise chain to log any errors that might occur:
+
+```js
+import Header from "./components/Header";
+import Nav from "./components/Nav";
+import Stories from "./components/Stories";
+import { useState, useEffect } from "preact/hooks";
+
+const NAVITEMS = ["arts", "books", "fashion", "food", "movies", "travel"];
+const FETCH_URL = "https://api.nytimes.com/svc/topstories/v2/";
+const NYT_API = "PGQuh0auTqHC6HEx4gADBhT2yLCdXYbN";
+
+export function App() {
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [section, setSection] = useState("arts");
 
   useEffect(() => {
-    setLoading(true);
     if (!localStorage.getItem(section)) {
       console.log("fetching from NYT");
+      setLoading(true);
       fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
         .then((response) => response.json())
-        .then((data) => setStories(data.results));
+        .then((data) => setStories(data.results))
+        .catch((error) => console.error(error));
+      setLoading(false);
     } else {
       console.log("section is in storage, not fetching");
       setStories(JSON.parse(localStorage.getItem(section)));
@@ -585,23 +705,15 @@ function App() {
 
   return (
     <>
-      <Header siteTitle="All the News that Fits We Print" />
-      <Nav navItems={navItems} />
+      <Header siteTitle="All the News That Fits We Print" />
+      <Nav navItems={NAVITEMS} />
       <Stories stories={stories} />
     </>
   );
 }
 ```
 
-If you leave the loading state true after the fetch you should see the early return.
-
-Set it to false at the end of the useEffect function:
-
-`setLoading(false);`
-
-(We can also see the loading block by slowing loading in the Network tab of the developer tools.)
-
-## Refactor
+<!-- ## Refactor
 
 Simplify App.jsx by moving some of the functionality in App.jsx into a new `scr/api.js` file:
 
@@ -621,11 +733,11 @@ export function fetchStoriesFromNYTimes(section, setStories) {
     });
   setStories(JSON.parse(localStorage.getItem(section)));
 }
-```
+``` -->
 
-## async/await
+<!-- ## async/await -->
 
-Read [this article](https://www.smashingmagazine.com/2020/11/comparison-async-await-versus-then-catch/) on Async/await vs `.then` chaining.
+<!-- Read [this article](https://www.smashingmagazine.com/2020/11/comparison-async-await-versus-then-catch/) on Async/await vs `.then` chaining.
 
 Sample:
 
@@ -651,9 +763,9 @@ export function fetchStoriesFromNYTimes(section, setStories) {
     })
     .catch((error) => console.log(error));
 }
-```
+``` -->
 
-Sample:
+<!-- Sample:
 
 ```js
 async someFunc() {
@@ -666,7 +778,9 @@ async someFunc() {
 ```js
 export async function fetchStoriesFromNYTimes(section, setStories) {
   try {
-    let response = await fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`);
+    let response = await fetch(
+      `${FETCH_URL}${section}.json?api-key=${NYT_API}`
+    );
     console.log("response::", response);
     let data = await response.json();
     console.log("data::", data);
@@ -678,9 +792,9 @@ export async function fetchStoriesFromNYTimes(section, setStories) {
 }
 ```
 
-See the "async-await-vs-then" folder in today's repo.
+See the "async-await-vs-then" folder in today's repo. -->
 
----
+<!-- ---
 
 Import api and use it in the App component:
 
@@ -721,11 +835,11 @@ function App() {
 }
 
 export default App;
-```
+``` -->
 
 ## Multiple Sections
 
-Currently our app only renders the arts section. We need to code the navbar tabs to communicate with App.jsx in order to call fetch for additional sections.
+Currently our app only renders one section. We need to code the navbar tabs to communicate with App.jsx in order to call fetch for additional sections.
 
 Since clicking on the nav is what changes the section we'll pass `setSection` into the Nav in App.jsx:
 
@@ -733,7 +847,7 @@ Since clicking on the nav is what changes the section we'll pass `setSection` in
 return (
   <>
     <Header siteTitle="All the News that Fits We Print" />
-    <Nav navItems={navItems} setSection={setSection} />
+    <Nav navItems={NAVITEMS} setSection={setSection} />
     <Stories stories={stories} />
   </>
 );
@@ -774,7 +888,7 @@ const Nav = (props) => {
 export default Nav;
 ```
 
-Now we need to pass the setSection function to NavItem from Nav.js:
+Now we need to pass the setSection function from Nav.js to NavItem :
 
 ```js
 import NavItem from "./NavItem";
@@ -821,23 +935,28 @@ The click event now communicates with the setSection function in App.jsx and our
 
 ```js
 useEffect(() => {
-  setLoading(true);
   if (!localStorage.getItem(section)) {
-    fetchStoriesFromNYTimes(section, setStories);
+    console.log("fetching from NYT");
+    setLoading(true);
+    fetch(`${FETCH_URL}${section}.json?api-key=${NYT_API}`)
+      .then((response) => response.json())
+      .then((data) => setStories(data.results))
+      .catch((error) => console.error(error));
+    setLoading(false);
   } else {
-    fetchStoriesFromLocalStorage(section, setStories);
+    console.log("section is in storage, not fetching");
+    setStories(JSON.parse(localStorage.getItem(section)));
   }
-  setLoading(false);
 }, [section]);
 ```
 
-Note we've added `section` to the previously empty useFetch dependencies array. The array allows you to determine when the effect will run. The empty array caused the effect to run once after the component rendered. When we add a piece of state or a prop to the array the effect will run whenever that state or prop changes.
+Note the `[section]` in the useFetch dependencies array.
 
-`.catch` has also been added at the end of the promise chain to log any errors that might occur.
+The array allows you to determine when the effect will run. The empty array caused the effect to run once after the component rendered. When we add a piece of state or a prop to the array the effect will run whenever that state or prop changes.
 
 Test it in the browser.
 
-## Touch Ups
+<!-- ## Touch Ups
 
 Add the logo list item to Nav.js:
 
@@ -928,8 +1047,9 @@ const Stories = (props) => {
   );
 };
 
-export default Stories;
-```
+export default Stories; -->
+
+<!-- ```` -->
 
 ## Active State
 
@@ -942,24 +1062,18 @@ Pass the section info to the Nav component.
 In App.jsx:
 
 ```js
-<Nav navItems={navItems} setSection={setSection} section={section} />
+<Nav navItems={NAVITEMS} setSection={setSection} section={section} />
 ```
 
 And then forward the property from Nav to the NavItem component:
 
 ```js
 import NavItem from "./NavItem";
-import { Logo } from "./Logo";
 
 const Nav = (props) => {
   return (
     <nav>
       <ul>
-        <li className="logo">
-          <a href="#top">
-            <Logo />
-          </a>
-        </li>
         {props.navItems.map((navItem, index) => (
           <NavItem
             key={index}
@@ -987,8 +1101,8 @@ const NavItem = (props) => {
   return (
     <li>
       <a
-        className={props.navItem === props.section ? "active" : ""}
         href={`#${props.navItem}`}
+        className={props.navItem === props.section ? "active" : ""}
         onClick={() => sendSection(props.navItem)}
       >
         {props.navItem}
@@ -1030,7 +1144,7 @@ nav a:not(.active):hover {
 }
 ```
 
-## DEMO Cookies
+<!-- ## DEMO Cookies
 
 Currently if a user refreshes the page the section is reset to the default: `const [section, setSection] = useState("arts");`. We could store the current section in a cookie to prevent this.
 
@@ -1096,7 +1210,7 @@ function App() {
 }
 
 export default App;
-```
+``` -->
 
 ## URL Parameters
 
@@ -1105,8 +1219,13 @@ A better method might be to use the URL hashes in the browser's location. Cookie
 First, [get the URL](https://gomakethings.com/getting-values-from-a-url-with-vanilla-js/) and convert the URL string into a URL object using the new URL() constructor.
 
 ```js
-const url = new URL(window.location.href);
-const hash = url.hash.slice(1);
+export function App() {
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [section, setSection] = useState("arts");
+
+  const url = new URL(window.location.href);
+  const hash = url.hash.slice(1);
 ```
 
 Do this within a `useEffect` hook in App.jsx:
@@ -1116,7 +1235,7 @@ useEffect(() => {
   const url = new URL(window.location.href);
   const hash = url.hash.slice(1);
   if (hash !== "undefined") {
-    console.log(" hash::", hash);
+    console.log("hash::", hash);
     setSection(hash);
   } else {
     setSection("arts");
@@ -1124,7 +1243,9 @@ useEffect(() => {
 }, []);
 ```
 
-## Styled Components
+And set the state for section to an empty string on initialization.
+
+<!-- ## Styled Components
 
 Examine the New York Times website in the dev tool's elements panel.
 
@@ -1365,6 +1486,6 @@ export const PageHeader = styled.h2`
   border-bottom: 2px solid #007eb677;
   grid-area: sectionhead;
 `;
-```
+``` -->
 
 ## Instructor Notes
